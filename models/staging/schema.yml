@@ -1,0 +1,151 @@
+version: 2
+
+models:
+  - name: stg_all_orders
+    description: Consolidated multi-tenant staging view for the raw `ft_table_0001` table across source schemas.
+    columns:
+      - name: tenant_id
+        description: Tenant identifier from the tenant schema registry seed.
+        data_tests:
+          - not_null
+      - name: source_server
+        description: Source SQL Server host grouping for the landed tenant schema.
+        data_tests:
+          - not_null
+      - name: source_database
+        description: Source SQL Server database name represented by the tenant schema.
+        data_tests:
+          - not_null
+      - name: source_schema
+        description: Raw schema where the row originated.
+        data_tests:
+          - not_null
+      - name: id
+        description: Raw row identifier used with tenant lineage to form the consolidated grain.
+      - name: _fivetran_deleted
+        description: Fivetran soft-delete marker from the raw source table.
+      - name: _fivetran_synced
+        description: Timestamp when Fivetran last synced the row.
+
+  - name: int_orders
+    description: Intermediate view for the consolidated `ft_table_0001` dataset with tenant-aware keys and normalized Fivetran metadata.
+    columns:
+      - name: order_sk
+        description: Tenant-aware surrogate key built from tenant, source lineage, and order_id.
+        data_tests:
+          - not_null
+          - unique
+      - name: tenant_id
+        description: Tenant identifier carried forward for joins and keys.
+        data_tests:
+          - not_null
+      - name: source_server
+        description: Source SQL Server host grouping for the landed tenant schema.
+        data_tests:
+          - not_null
+      - name: source_database
+        description: Source SQL Server database name represented by the tenant schema.
+        data_tests:
+          - not_null
+      - name: source_schema
+        description: Raw schema where the row originated.
+        data_tests:
+          - not_null
+      - name: order_id
+        description: Normalized row identifier from ft_table_0001.
+        data_tests:
+          - not_null
+      - name: fivetran_synced_at
+        description: Timestamp when Fivetran last synced the row.
+        data_tests:
+          - not_null
+      - name: is_fivetran_deleted
+        description: Boolean Fivetran soft-delete marker from the raw source table.
+
+  - name: orders_cmb
+    description: Physical combined orders table built from consolidated `ft_table_0001` rows across enabled tenant schemas.
+    columns:
+      - name: order_sk
+        description: Tenant-aware surrogate key for the combined orders table.
+        data_tests:
+          - not_null
+          - unique
+      - name: tenant_id
+        description: Tenant identifier used for reporting filters and lineage.
+        data_tests:
+          - not_null
+      - name: source_server
+        description: Source SQL Server host grouping for the landed tenant schema.
+        data_tests:
+          - not_null
+      - name: source_database
+        description: Source SQL Server database name represented by the tenant schema.
+        data_tests:
+          - not_null
+      - name: source_schema
+        description: Raw schema where the row originated.
+        data_tests:
+          - not_null
+      - name: order_id
+        description: Normalized row identifier from ft_table_0001.
+        data_tests:
+          - not_null
+      - name: fivetran_synced_at
+        description: Timestamp when Fivetran last synced the row.
+        data_tests:
+          - not_null
+      - name: is_fivetran_deleted
+        description: Boolean Fivetran soft-delete marker from the raw source table.
+
+  - name: order_tenant_coverage
+    description: Physical monitoring table that shows how many active consolidated `ft_table_0001` rows are present for each tenant schema.
+    columns:
+      - name: tenant_id
+        description: Tenant identifier from the tenant schema registry seed.
+        data_tests:
+          - not_null
+      - name: source_server
+        description: Source SQL Server host grouping for the landed tenant schema.
+        data_tests:
+          - not_null
+      - name: source_database
+        description: Source SQL Server database name represented by the tenant schema.
+        data_tests:
+          - not_null
+      - name: source_schema
+        description: Raw schema where the tenant's rows originated.
+        data_tests:
+          - not_null
+      - name: order_row_count
+        description: Number of active rows currently present for the tenant in the combined layer.
+        data_tests:
+          - not_null
+      - name: max_fivetran_synced
+        description: Latest Fivetran sync timestamp observed for the tenant.
+
+seeds:
+  - name: tenant_schemas
+    description: Registry of source schemas to consolidate into shared reporting models.
+    columns:
+      - name: tenant_id
+        description: Stable tenant identifier used in reporting keys and joins.
+        data_tests:
+          - not_null
+          - unique
+      - name: source_server
+        description: Source SQL Server host grouping for the landed tenant schema.
+        data_tests:
+          - not_null
+      - name: source_database
+        description: Source SQL Server database name represented by the tenant schema.
+        data_tests:
+          - not_null
+      - name: source_schema
+        description: Source schema name in Snowflake / Polaris.
+        data_tests:
+          - not_null
+          - unique
+      - name: enabled
+        description: Whether this tenant schema should be included in consolidation.
+        data_tests:
+          - not_null
