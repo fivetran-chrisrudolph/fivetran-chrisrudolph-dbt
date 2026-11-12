@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'dbt_chris_rudolph_test'
-=======
 name: 'customer_reporting_consolidation'
->>>>>>> c520399e8739948f0fd7c5e2a01e48b0dbc40c27
+
 version: '1.0.0'
 config-version: 2
 
@@ -29,14 +25,6 @@ vars:
   tenant_schema_seed_name: "tenant_schemas"
 
 models:
-<<<<<<< HEAD
-  dbt_chris_rudolph_test:
-    # Config indicated by + and applies to all files under models/example/
-    staging:
-      +materialized: view
-    marts:
-      +materialized: table
-=======
   customer_reporting_consolidation:
     staging:
       +materialized: view
@@ -48,4 +36,4 @@ models:
 seeds:
   customer_reporting_consolidation:
     +quote_columns: false
->>>>>>> c520399e8739948f0fd7c5e2a01e48b0dbc40c27
+
